@@ -1,88 +1,165 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Next B3A</title>
+<meta name="theme-color" content="#f7f7f5">
+<meta name="description" content="城巴 B3A 即時到站時間：富泰邨往深圳灣口岸，以及深圳灣口岸往屯門。">
+<title>B3A · 即時到站</title>
 <style>
-  body { font-family: system-ui, "Segoe UI", "Microsoft JhengHei", sans-serif; margin: 0;
-         background: #f4f6f8; color: #1f2933; }
-  header { background: #c00000; color: #fff; padding: 16px 24px; }
-  header h1 { margin: 0; font-size: 28px; }
-  header p { margin: 4px 0 0; opacity: .9; }
-  main { display: flex; flex-wrap: wrap; gap: 20px; padding: 24px; }
-  section { flex: 1 1 320px; background: #fff; border-radius: 12px; padding: 18px 22px;
-            box-shadow: 0 1px 4px rgba(0,0,0,.12); }
-  h2 { margin: 0 0 4px; font-size: 20px; color: #1f4e79; }
-  .stop { color: #6b7280; margin: 0 0 14px; }
-  .bus { display: flex; justify-content: space-between; align-items: baseline;
-         border-top: 1px solid #e5e7eb; padding: 10px 0; }
-  .min { font-size: 34px; font-weight: 700; color: #c00000; }
-  .clock { color: #6b7280; }
-  .none { color: #6b7280; padding: 10px 0; }
-  footer { padding: 0 24px 24px; color: #6b7280; font-size: 14px; }
-  @media (max-width: 480px) {
-    header { padding: 16px; }
-    main { padding: 16px; gap: 16px; }
-    section { flex-basis: 100%; min-width: 0; padding: 16px; }
-    .bus { flex-wrap: wrap; gap: 4px 12px; }
-    footer { padding: 0 16px 16px; }
+  :root { color-scheme: light; --paper: #f7f7f5; --ink: #20211f; --muted: #686b65; --line: #e6e7e2; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif; -webkit-font-smoothing: antialiased; }
+  .page { max-width: 960px; margin: 0 auto; padding: 64px 32px 28px; }
+  header { padding-bottom: 32px; }
+  .eyebrow { margin: 0 0 16px; color: var(--muted); font-size: 11px; letter-spacing: .16em; }
+  .heading { display: flex; align-items: baseline; gap: 16px; }
+  h1 { margin: 0; font-size: 60px; font-weight: 650; line-height: 1; letter-spacing: -.06em; }
+  .heading span { font-size: 15px; font-weight: 500; }
+  .route { margin: 16px 0 0; color: var(--muted); font-size: 13px; line-height: 1.7; }
+  .route span { margin: 0 8px; color: #95988f; }
+  main { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+  section { min-width: 0; padding: 28px; background: #fff; border: 1px solid var(--line); border-radius: 16px; }
+  h2 { margin: 0; font-size: 21px; font-weight: 600; letter-spacing: -.03em; line-height: 1.45; }
+  .english { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; font-weight: 400; letter-spacing: 0; }
+  .stop { margin: 14px 0 0; color: var(--muted); font-size: 12px; line-height: 1.7; }
+  .board { margin-top: 24px; font-variant-numeric: tabular-nums; }
+  .next-label { margin: 0 0 6px; color: var(--muted); font-size: 11px; }
+  .bus { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; }
+  .next-bus { padding-bottom: 20px; }
+  .min { font-size: 68px; font-weight: 500; letter-spacing: -.065em; line-height: 1.1; }
+  .unit { margin-left: 8px; color: var(--muted); font-size: 13px; font-weight: 400; letter-spacing: 0; }
+  .arriving { font-size: 36px; letter-spacing: -.04em; }
+  .clock { color: var(--muted); font-size: 13px; white-space: nowrap; }
+  .later-bus { padding: 12px 0; border-top: 1px solid var(--line); }
+  .later-bus:last-child { padding-bottom: 0; }
+  .later-bus .min { font-size: 18px; font-weight: 500; letter-spacing: -.02em; }
+  .later-bus .unit { font-size: 11px; margin-left: 5px; }
+  .note { flex-basis: 100%; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
+  .none { padding: 18px 0; color: var(--muted); font-size: 14px; line-height: 1.7; }
+  .board-warning { margin: 12px 0 0; color: var(--muted); font-size: 12px; }
+  .status-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 20px 0; border-bottom: 1px solid var(--line); }
+  .status-bar p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.8; }
+  button { min-height: 44px; padding: 8px 14px; border: 1px solid #d9dbd3; border-radius: 100px; background: transparent; color: var(--ink); font: inherit; font-size: 12px; cursor: pointer; }
+  button:hover { background: #edeee8; }
+  button:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  button:disabled { cursor: wait; color: var(--muted); }
+  footer { padding-top: 18px; color: var(--muted); font-size: 10px; line-height: 1.8; }
+  footer a { color: inherit; text-underline-offset: 3px; }
+  @media (max-width: 640px) {
+    .page { padding: 32px 20px 24px; }
+    header { padding-bottom: 24px; }
+    .eyebrow { margin-bottom: 12px; }
+    h1 { font-size: 48px; }
+    main { grid-template-columns: 1fr; gap: 14px; }
+    section { padding: 22px; border-radius: 14px; }
+    h2 { font-size: 19px; }
+    .stop { margin-top: 10px; }
+    .board { margin-top: 18px; }
+    .min { font-size: 58px; }
+    .arriving { font-size: 32px; }
+    .next-bus { padding-bottom: 16px; }
+    .later-bus { padding: 10px 0; }
+    .status-bar { padding: 14px 0; }
   }
 </style>
 </head>
 <body>
-<header>
-  <h1>Next B3A</h1>
-  <p>Citybus · Lingnan ⇄ Shenzhen Bay Port · 城巴 B3A</p>
-</header>
-<main>
-  <section>
-    <h2>To Shenzhen Bay Port · 往深圳灣口岸</h2>
-    <p class="stop">From Fu Tai Estate, Castle Peak Road · 富泰邨</p>
-    <div id="out">Loading…</div>
-  </section>
-  <section>
-    <h2>To Tuen Mun · 往屯門山景邨</h2>
-    <p class="stop">From Shenzhen Bay Port · 深圳灣口岸</p>
-    <div id="in">Loading…</div>
-  </section>
-</main>
-<footer>Data: Citybus real-time ETA, DATA.GOV.HK · updated <span id="updated">–</span> · refreshes every 30 s</footer>
+<div class="page">
+  <header>
+    <p class="eyebrow">CITYBUS · 城巴</p>
+    <div class="heading"><h1>B3A</h1><span>即時到站</span></div>
+    <p class="route">富泰邨<span aria-hidden="true">↔</span>深圳灣口岸</p>
+  </header>
+  <main aria-label="兩個方向的到站時間">
+    <section aria-labelledby="out-title">
+      <h2 id="out-title">往深圳灣口岸<span class="english" lang="en">To Shenzhen Bay Port</span></h2>
+      <p class="stop">上車站 · 富泰邨（青山公路）</p>
+      <div id="out" class="board"><div class="none">正在讀取到站時間…</div></div>
+    </section>
+    <section aria-labelledby="in-title">
+      <h2 id="in-title">往屯門山景邨<span class="english" lang="en">To Tuen Mun (Shan King Estate)</span></h2>
+      <p class="stop">上車站 · 深圳灣口岸</p>
+      <div id="in" class="board"><div class="none">正在讀取到站時間…</div></div>
+    </section>
+  </main>
+  <div class="status-bar">
+    <p id="status" role="status">正在連線…</p>
+    <button id="refresh" type="button">重新整理</button>
+  </div>
+  <footer>資料來源：城巴 · <a href="https://data.gov.hk/" target="_blank" rel="noopener noreferrer">DATA.GOV.HK</a><br>到站時間僅供參考，請以實際交通情況為準。</footer>
+</div>
 <script>
-  // Stop IDs come from /route-stop/CTB/B3A/outbound and /stop/{id}:
-  // 003261 = Fu Tai Estate (outbound, last stop before the port)
-  // 003208 = Shenzhen Bay Port (inbound, first stop)
-  const API = "https://rt.data.gov.hk/v2/transport/citybus/eta/CTB/";
-  const BOARDS = [["out", "003261", "O"], ["in", "003208", "I"]];
+  const API = 'https://rt.data.gov.hk/v2/transport/citybus/eta/CTB/';
+  const BOARDS = [['out', '003261', 'O'], ['in', '003208', 'I']];
+  const lastUpdated = new Map();
+  const timeFormat = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Hong_Kong' });
+  let refreshing = false;
+
+  function element(tag, className, text) {
+    const node = document.createElement(tag);
+    node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function render(box, buses) {
+    const content = document.createDocumentFragment();
+    if (!buses.length) content.append(element('div', 'none', '暫時沒有預計到站班次'));
+    else {
+      content.append(element('p', 'next-label', '下一班'));
+      buses.forEach((bus, index) => {
+        const time = new Date(bus.eta);
+        const minutes = Math.max(0, Math.round((time - Date.now()) / 60000));
+        const row = element('div', 'bus ' + (index === 0 ? 'next-bus' : 'later-bus'));
+        const eta = element('span', 'min' + (minutes === 0 ? ' arriving' : ''), minutes === 0 ? '即將到站' : String(minutes));
+        if (minutes > 0) eta.append(element('span', 'unit', '分鐘'));
+        row.append(eta, element('span', 'clock', timeFormat.format(time)));
+        const note = bus.rmk_tc || bus.rmk_en;
+        if (note) row.append(element('p', 'note', note));
+        content.append(row);
+      });
+    }
+    box.replaceChildren(content);
+  }
 
   async function load(boxId, stop, dir) {
     const box = document.getElementById(boxId);
     try {
-      const res = await fetch(API + stop + "/B3A");
-      const data = (await res.json()).data.filter(b => b.dir === dir && b.eta);
-      if (data.length === 0) {
-        box.innerHTML = '<div class="none">No bus in the next hour · 暫時沒有班次</div>';
-        return;
-      }
-      box.innerHTML = data.map(b => {
-        const t = new Date(b.eta);
-        const min = Math.max(0, Math.round((t - Date.now()) / 60000));
-        const clock = t.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit",
-                                                      timeZone: "Asia/Hong_Kong" });
-        const note = b.rmk_en ? " · " + b.rmk_en : "";
-        return `<div class="bus"><span class="min">${min === 0 ? "Arriving" : min + " min"}</span>` +
-               `<span class="clock">${clock}${note}</span></div>`;
-      }).join("");
-    } catch (e) {
-      box.innerHTML = '<div class="none">Cannot reach the data. Check the Wi-Fi.</div>';
+      const response = await fetch(API + stop + '/B3A', { signal: AbortSignal.timeout(12000) });
+      if (!response.ok) throw new Error('Request failed');
+      const result = await response.json();
+      if (!Array.isArray(result.data)) throw new Error('Invalid response');
+      const buses = result.data.filter(bus => bus.dir === dir && bus.eta && Number.isFinite(Date.parse(bus.eta)))
+        .sort((a, b) => Date.parse(a.eta) - Date.parse(b.eta)).slice(0, 3);
+      render(box, buses);
+      lastUpdated.set(boxId, new Date());
+      return true;
+    } catch {
+      if (lastUpdated.has(boxId)) {
+        box.querySelector('.board-warning')?.remove();
+        box.append(element('p', 'board-warning', '未能更新 · 顯示上次資料（' + timeFormat.format(lastUpdated.get(boxId)) + '）'));
+      } else box.replaceChildren(element('div', 'none', '暫時未能連線，請稍後重新整理。'));
+      return false;
     }
   }
 
-  function refresh() {
-    BOARDS.forEach(b => load(...b));
-    document.getElementById("updated").textContent =
-      new Date().toLocaleTimeString("en-GB", { timeZone: "Asia/Hong_Kong" });
+  async function refresh() {
+    if (refreshing) return;
+    refreshing = true;
+    const button = document.getElementById('refresh');
+    const status = document.getElementById('status');
+    button.disabled = true;
+    button.textContent = '更新中…';
+    const results = await Promise.all(BOARDS.map(board => load(...board)));
+    if (results.every(Boolean)) status.textContent = '更新於 ' + timeFormat.format(new Date()) + ' · 每 30 秒自動更新';
+    else status.textContent = (results.some(Boolean) ? '部分資料未能更新' : '暫時未能更新') + ' · 30 秒後重試';
+    button.disabled = false;
+    button.textContent = '重新整理';
+    refreshing = false;
   }
+
+  document.getElementById('refresh').addEventListener('click', refresh);
   refresh();
   setInterval(refresh, 30000);
 </script>
